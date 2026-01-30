@@ -1,44 +1,61 @@
 import { useEffect, useMemo, useState } from "react";
-import { loadTransactions, saveTransactions, loadCategories } from "../utils/storage.js";
-import { uid } from "../utils/id.js";
+import { transactionsAPI, categoriesAPI } from "../lib/api.js";
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [filters, setFilters] = useState({ q: "", type: "all", date: "" });
-  const [sort, setSort] = useState("date_desc"); // date_desc | date_asc | amount_desc | amount_asc
+  const [sort, setSort] = useState("date"); // date, amount, created_at
+  const [sortOrder, setSortOrder] = useState("desc");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     type: "expense",
-    categoryId: "",
+    category_id: "",
     amount: "",
-    note: "",
+    description: "",
   });
 
   useEffect(() => {
-    setTransactions(loadTransactions());
-    setCategories(loadCategories());
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [transactionsData, categoriesData] = await Promise.all([
+        transactionsAPI.getAll(),
+        categoriesAPI.getAll()
+      ]);
+      setTransactions(transactionsData.transactions || []);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openModal = (transaction = null) => {
     if (transaction) {
       setForm({
         date: transaction.date,
         type: transaction.type,
-        categoryId: transaction.categoryId || "",
+        category_id: transaction.category_id || "",
         amount: transaction.amount?.toString?.() ?? "",
-        note: transaction.note || "",
+        description: transaction.description || "",
       });
       setEditingId(transaction.id);
     } else {
       setForm({
         date: new Date().toISOString().split("T")[0],
         type: "expense",
-        categoryId: "",
+        category_id: "",
         amount: "",
-        note: "",
+        description: "",
       });
       setEditingId(null);
     }
@@ -51,55 +68,55 @@ export default function Transactions() {
     setForm({
       date: new Date().toISOString().split("T")[0],
       type: "expense",
-      categoryId: "",
+      category_id: "",
       amount: "",
-      note: "",
+      description: "",
     });
   };
 
-  const handleSave = () => {
-    if (!form.date || !form.categoryId || !form.amount) return;
+  const handleSave = async () => {
+    if (!form.date || !form.category_id || !form.amount) return;
     const amount = parseFloat(form.amount);
     if (isNaN(amount) || amount <= 0) return;
 
-    let updated;
-    if (editingId) {
-      updated = transactions.map((t) =>
-        t.id === editingId
-          ? {
-              ...t,
-              date: form.date,
-              type: form.type,
-              categoryId: form.categoryId,
-              amount,
-              note: form.note.trim(),
-            }
-          : t
-      );
-    } else {
-      updated = [
-        ...transactions,
-        {
-          id: uid(),
-          date: form.date,
-          type: form.type,
-          categoryId: form.categoryId,
-          amount,
-          note: form.note.trim(),
-        },
-      ];
-    }
+    setSaving(true);
+    try {
+      const transactionData = {
+        date: form.date,
+        type: form.type,
+        category_id: form.category_id,
+        amount: amount,
+        description: form.description.trim(),
+      };
 
-    setTransactions(updated);
-    saveTransactions(updated);
-    closeModal();
+      if (editingId) {
+        const updatedTransaction = await transactionsAPI.update(editingId, transactionData);
+        setTransactions(transactions.map(t =>
+          t.id === editingId ? { ...updatedTransaction, category_name: getCategoryName(updatedTransaction.category_id) } : t
+        ));
+      } else {
+        const newTransaction = await transactionsAPI.create(transactionData);
+        setTransactions([...transactions, { ...newTransaction, category_name: getCategoryName(newTransaction.category_id) }]);
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Failed to save transaction:", error);
+      alert("Failed to save transaction. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!confirm("A je i sigurt që dëshiron ta fshish këtë transaksion?")) return;
-    const updated = transactions.filter((t) => t.id !== id);
-    setTransactions(updated);
-    saveTransactions(updated);
+
+    try {
+      await transactionsAPI.delete(id);
+      setTransactions(transactions.filter(t => t.id !== id));
+    } catch (error) {
+      console.error("Failed to delete transaction:", error);
+      alert("Failed to delete transaction. Please try again.");
+    }
   };
 
   const getCategoryName = (categoryId) => {
@@ -108,17 +125,17 @@ export default function Transactions() {
   };
 
   const filteredCategories = useMemo(
-    () => categories.filter((cat) => cat.type === form.type),
-    [categories, form.type]
+    () => categories.filter((cat) => true), // All categories for now since backend doesn't have type field
+    [categories]
   );
 
   const filteredTransactions = useMemo(() => {
     const q = filters.q.trim().toLowerCase();
     return transactions.filter((t) => {
       if (q) {
-        const categoryName = getCategoryName(t.categoryId).toLowerCase();
-        const note = (t.note || "").toLowerCase();
-        if (!categoryName.includes(q) && !note.includes(q)) return false;
+        const categoryName = (t.category_name || getCategoryName(t.category_id) || "").toLowerCase();
+        const description = (t.description || "").toLowerCase();
+        if (!categoryName.includes(q) && !description.includes(q)) return false;
       }
       if (filters.type !== "all" && t.type !== filters.type) return false;
       if (filters.date && t.date !== filters.date) return false;
@@ -130,21 +147,21 @@ export default function Transactions() {
     const arr = [...filteredTransactions];
 
     arr.sort((a, b) => {
-      if (sort === "date_desc") {
-        if ((b.date || "") !== (a.date || "")) return (b.date || "").localeCompare(a.date || "");
-        return (b.id || "").localeCompare(a.id || "");
+      let comparison = 0;
+
+      if (sort === "date") {
+        comparison = (b.date || "").localeCompare(a.date || "");
+      } else if (sort === "amount") {
+        comparison = (b.amount || 0) - (a.amount || 0);
+      } else if (sort === "created_at") {
+        comparison = new Date(b.created_at || 0) - new Date(a.created_at || 0);
       }
-      if (sort === "date_asc") {
-        if ((a.date || "") !== (b.date || "")) return (a.date || "").localeCompare(b.date || "");
-        return (a.id || "").localeCompare(b.id || "");
-      }
-      if (sort === "amount_desc") return (b.amount || 0) - (a.amount || 0);
-      if (sort === "amount_asc") return (a.amount || 0) - (b.amount || 0);
-      return 0;
+
+      return sortOrder === "asc" ? -comparison : comparison;
     });
 
     return arr;
-  }, [filteredTransactions, sort]);
+  }, [filteredTransactions, sort, sortOrder]);
 
   return (
     <div className="space-y-6">
@@ -187,14 +204,20 @@ export default function Transactions() {
           />
 
           <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
+            value={`${sort}_${sortOrder}`}
+            onChange={(e) => {
+              const [field, order] = e.target.value.split('_');
+              setSort(field);
+              setSortOrder(order);
+            }}
             className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none"
           >
             <option value="date_desc">Sort: Date (newest)</option>
             <option value="date_asc">Sort: Date (oldest)</option>
             <option value="amount_desc">Sort: Amount (high → low)</option>
             <option value="amount_asc">Sort: Amount (low → high)</option>
+            <option value="created_at_desc">Sort: Created (newest)</option>
+            <option value="created_at_asc">Sort: Created (oldest)</option>
           </select>
         </div>
       </div>
@@ -211,7 +234,13 @@ export default function Transactions() {
             </tr>
           </thead>
           <tbody>
-            {sortedTransactions.length === 0 ? (
+            {loading ? (
+              <tr className="border-t border-slate-800">
+                <td className="p-3 text-slate-400 text-center" colSpan={5}>
+                  Loading transactions...
+                </td>
+              </tr>
+            ) : sortedTransactions.length === 0 ? (
               <tr className="border-t border-slate-800">
                 <td className="p-3 text-slate-400" colSpan={5}>
                   S'ka transaksione ende.
@@ -224,7 +253,7 @@ export default function Transactions() {
                   <td className="p-3">
                     <span className="px-2 py-1 rounded text-xs bg-slate-800">{t.type}</span>
                   </td>
-                  <td className="p-3">{getCategoryName(t.categoryId)}</td>
+                  <td className="p-3">{t.category_name || getCategoryName(t.category_id)}</td>
                   <td className="p-3">€ {Number(t.amount || 0).toFixed(2)}</td>
                   <td className="p-3">
                     <div className="flex gap-2">
@@ -284,12 +313,12 @@ export default function Transactions() {
                 <label className="text-xs text-slate-400">Category</label>
                 {filteredCategories.length === 0 ? (
                   <div className="mt-1 text-xs text-slate-500">
-                    S'ka kategori për {form.type}. Krijo kategori fillimisht.
+                    S'ka kategori. Krijo kategori fillimisht.
                   </div>
                 ) : (
                   <select
-                    value={form.categoryId}
-                    onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                    value={form.category_id}
+                    onChange={(e) => setForm({ ...form, category_id: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
                     required
                   >
@@ -318,12 +347,12 @@ export default function Transactions() {
               </div>
 
               <div>
-                <label className="text-xs text-slate-400">Note (optional)</label>
+                <label className="text-xs text-slate-400">Description (optional)</label>
                 <input
-                  value={form.note}
-                  onChange={(e) => setForm({ ...form, note: e.target.value })}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
                   className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
-                  placeholder="Note..."
+                  placeholder="Description..."
                 />
               </div>
             </div>
@@ -331,14 +360,15 @@ export default function Transactions() {
             <div className="flex gap-2 mt-6">
               <button
                 onClick={handleSave}
-                disabled={!form.date || !form.categoryId || !form.amount || filteredCategories.length === 0}
+                disabled={saving || !form.date || !form.category_id || !form.amount || filteredCategories.length === 0}
                 className="flex-1 rounded-xl border border-slate-700 bg-slate-100 text-slate-950 px-3 py-2 text-sm font-semibold hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save
+                {saving ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={closeModal}
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm hover:bg-slate-900/70"
+                disabled={saving}
+                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm hover:bg-slate-900/70 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>

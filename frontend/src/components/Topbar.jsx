@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
+import { authAPI } from "../lib/api.js";
 
 export default function Topbar() {
   const navigate = useNavigate();
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    authAPI.logout();
     navigate("/login", { replace: true });
   };
 

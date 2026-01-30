@@ -6,11 +6,10 @@ import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Categories from "./pages/Categories.jsx";
-
-const isAuthed = () => localStorage.getItem("accessToken");
+import { authAPI } from "./lib/api.js";
 
 function Protected({ children }) {
-  return isAuthed() ? children : <Navigate to="/login" replace />;
+  return authAPI.isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
