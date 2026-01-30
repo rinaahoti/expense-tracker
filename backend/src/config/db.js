@@ -19,20 +19,22 @@ let pool;
 export const connectDB = async () => {
   try {
     pool = mysql.createPool(dbConfig);
-    // Test the connection
     const connection = await pool.getConnection();
     console.log('Connected to MySQL database');
     connection.release();
     return pool;
   } catch (error) {
-    console.error('Error connecting to MySQL:', error);
-    throw error;
+    console.warn('MySQL jo i arritshëm (localhost:3306). Nisni MySQL për të përdorur të dhënat. Serveri vazhdon pa DB.');
+    pool = null;
+    return null;
   }
 };
 
 export const getPool = () => {
   if (!pool) {
-    throw new Error('Database not connected. Call connectDB() first.');
+    const err = new Error('Database not connected.');
+    err.code = 'DB_NOT_CONNECTED';
+    throw err;
   }
   return pool;
 };

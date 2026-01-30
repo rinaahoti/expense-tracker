@@ -330,30 +330,30 @@ export default function Transactions() {
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/95 backdrop-blur p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 sm:p-8 z-50">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/95 backdrop-blur p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto text-white">
+            <h3 className="text-lg font-semibold mb-4 text-white">
               {editingId ? "Edit Transaction" : "Add Transaction"}
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-slate-400">Date</label>
+                <label className="text-xs text-slate-300">Date</label>
                 <input
                   type="date"
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 text-sm text-white placeholder:text-slate-400 outline-none focus:border-slate-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-400">Type</label>
+                <label className="text-xs text-slate-300">Type</label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm({ ...form, type: e.target.value, categoryId: "" })}
-                  className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 text-sm text-white outline-none focus:border-slate-500"
                 >
                   <option value="income">Income</option>
                   <option value="expense">Expense</option>
@@ -361,16 +361,16 @@ export default function Transactions() {
               </div>
 
               <div>
-                <label className="text-xs text-slate-400">Category</label>
+                <label className="text-xs text-slate-300">Category</label>
                 {filteredCategories.length === 0 ? (
-                  <div className="mt-1 text-xs text-slate-500">
+                  <div className="mt-1 text-xs text-slate-400">
                     S'ka kategori. Krijo kategori fillimisht.
                   </div>
                 ) : (
                   <select
                     value={form.category_id}
                     onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+                    className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 text-sm text-white outline-none focus:border-slate-500"
                     required
                   >
                     <option value="">Select category</option>
@@ -384,25 +384,25 @@ export default function Transactions() {
               </div>
 
               <div>
-                <label className="text-xs text-slate-400">Amount</label>
+                <label className="text-xs text-slate-300">Amount</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0.01"
                   value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 text-sm text-white placeholder:text-slate-400 outline-none focus:border-slate-500"
                   placeholder="0.00"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-400">Description (optional)</label>
+                <label className="text-xs text-slate-300">Description (optional)</label>
                 <input
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+                  className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 text-sm text-white placeholder:text-slate-400 outline-none focus:border-slate-500"
                   placeholder="Description..."
                 />
               </div>

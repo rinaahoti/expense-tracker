@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// Create axios instance with base configuration
+// API base URL from env (no localhost in error messages)
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+
 const api = axios.create({
-  baseURL: 'http://localhost:5002',
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -22,19 +24,26 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token expiration
+// Response interceptor: token expiration + hide server URLs in errors
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid, clear local storage and redirect to login
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+    // Normalize error so UI never shows localhost/server URLs
+    const friendly = new Error(
+      error.response?.data?.message ||
+      (error.code === 'ERR_NETWORK' ? 'Serveri nuk është i arritshëm. Kontrollo që backend-i të jetë duke u ekzekutuar.' : 'Diçka shkoi keq. Provo përsëri.')
+    );
+    friendly.response = error.response;
+    friendly.status = error.response?.status;
+    return Promise.reject(friendly);
   }
 );
 

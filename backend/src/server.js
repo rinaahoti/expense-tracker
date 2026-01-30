@@ -10,10 +10,9 @@ import transactionRoutes from "./routes/transactions.js";
 
 dotenv.config();
 
-// Connect to database
+// Connect to database (server runs even if MySQL is off)
 connectDB().catch(err => {
-  console.error('Failed to connect to database:', err);
-  process.exit(1);
+  console.warn('MySQL jo i arritshëm. Serveri vazhdon pa DB. Nisni MySQL për të përdorur të dhënat.');
 });
 
 const app = express();
@@ -46,6 +45,9 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  if (err.code === 'DB_NOT_CONNECTED') {
+    return res.status(503).json({ message: "Baza e të dhënave nuk është e disponueshme. Nisni MySQL." });
+  }
   console.error(err);
   res.status(500).json({ message: "Server error" });
 });

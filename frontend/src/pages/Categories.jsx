@@ -164,7 +164,7 @@ export default function Categories() {
 
       {modalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content max-w-md w-full">
+          <div className="modal-content max-w-lg w-full px-8 sm:px-10 py-8 sm:py-10">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-slate-900">
                 {editingId ? "Edit Category" : "Create New Category"}

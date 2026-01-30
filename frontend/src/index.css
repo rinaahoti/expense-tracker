@@ -61,19 +61,6 @@
     @apply bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg;
   }
 
-  .sidebar-item::before {
-    content: '';
-    @apply absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-500 to-indigo-500 transform -translate-x-full transition-transform duration-200 ease-out;
-  }
-
-  .sidebar-item:hover::before {
-    @apply translate-x-0;
-  }
-
-  .sidebar-item.active::before {
-    @apply translate-x-0;
-  }
-
   /* Modern Table */
   .table-modern {
     @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-white/50;
@@ -107,7 +94,7 @@
 
   /* Modern Modal */
   .modal-overlay {
-    @apply fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50;
+    @apply fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 sm:p-8 z-50;
   }
 
   .modal-content {
