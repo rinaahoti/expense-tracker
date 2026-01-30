@@ -1,17 +1,40 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { connectDB } from "./config/db.js";
+
+// Routes
+import authRoutes from "./routes/auth.js";
+import categoryRoutes from "./routes/categories.js";
+import transactionRoutes from "./routes/transactions.js";
 
 dotenv.config();
 
+// Connect to database
+connectDB().catch(err => {
+  console.error('Failed to connect to database:', err);
+  process.exit(1);
+});
+
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
+// CORS configuration
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.use(express.json());
 
+// Routes
+app.use("/auth", authRoutes);
+app.use("/categories", categoryRoutes);
+app.use("/transactions", transactionRoutes);
+
 app.get("/", (req, res) => {
-  res.send("API is running");
+  res.send("Expense Tracker API is running");
 });
 
 app.get("/health", (req, res) => {

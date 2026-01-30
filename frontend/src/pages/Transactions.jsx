@@ -164,110 +164,161 @@ export default function Transactions() {
   }, [filteredTransactions, sort, sortOrder]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Transactions</h2>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Transactions</h1>
+          <p className="text-slate-600 mt-1">Track your income and expenses</p>
+        </div>
         <button
           onClick={() => openModal()}
-          className="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm hover:bg-slate-900/70"
+          className="btn-primary flex items-center gap-2"
         >
-          + Add
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Add Transaction
         </button>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-4">
-        <div className="text-sm text-slate-300 mb-3">Filters</div>
+      {/* Filters */}
+      <div className="card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <h3 className="text-lg font-semibold text-slate-900">Filters & Search</h3>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <input
-            value={filters.q}
-            onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-            className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none"
-            placeholder="Search..."
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-2 block">Search</label>
+            <input
+              value={filters.q}
+              onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+              className="input-modern w-full"
+              placeholder="Search transactions..."
+            />
+          </div>
 
-          <select
-            value={filters.type}
-            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-            className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none"
-          >
-            <option value="all">All types</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-2 block">Type</label>
+            <select
+              value={filters.type}
+              onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+              className="input-modern w-full"
+            >
+              <option value="all">All types</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
 
-          <input
-            value={filters.date}
-            onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-            className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none"
-            type="date"
-          />
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-2 block">Date</label>
+            <input
+              value={filters.date}
+              onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+              className="input-modern w-full"
+              type="date"
+            />
+          </div>
 
-          <select
-            value={`${sort}_${sortOrder}`}
-            onChange={(e) => {
-              const [field, order] = e.target.value.split('_');
-              setSort(field);
-              setSortOrder(order);
-            }}
-            className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none"
-          >
-            <option value="date_desc">Sort: Date (newest)</option>
-            <option value="date_asc">Sort: Date (oldest)</option>
-            <option value="amount_desc">Sort: Amount (high → low)</option>
-            <option value="amount_asc">Sort: Amount (low → high)</option>
-            <option value="created_at_desc">Sort: Created (newest)</option>
-            <option value="created_at_asc">Sort: Created (oldest)</option>
-          </select>
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-2 block">Sort By</label>
+            <select
+              value={`${sort}_${sortOrder}`}
+              onChange={(e) => {
+                const [field, order] = e.target.value.split('_');
+                setSort(field);
+                setSortOrder(order);
+              }}
+              className="input-modern w-full"
+            >
+              <option value="date_desc">Date (newest first)</option>
+              <option value="date_asc">Date (oldest first)</option>
+              <option value="amount_desc">Amount (high to low)</option>
+              <option value="amount_asc">Amount (low to high)</option>
+              <option value="created_at_desc">Created (newest)</option>
+              <option value="created_at_asc">Created (oldest)</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/30 overflow-hidden">
+      {/* Transactions Table */}
+      <div className="table-modern">
         <table className="w-full text-sm">
-          <thead className="bg-slate-900/60">
-            <tr className="text-left">
-              <th className="p-3">Date</th>
-              <th className="p-3">Type</th>
-              <th className="p-3">Category</th>
-              <th className="p-3">Amount</th>
-              <th className="p-3">Actions</th>
+          <thead className="table-header">
+            <tr>
+              <th className="p-4 text-left font-semibold text-slate-900">Date</th>
+              <th className="p-4 text-left font-semibold text-slate-900">Type</th>
+              <th className="p-4 text-left font-semibold text-slate-900">Category</th>
+              <th className="p-4 text-left font-semibold text-slate-900">Description</th>
+              <th className="p-4 text-left font-semibold text-slate-900">Amount</th>
+              <th className="p-4 text-left font-semibold text-slate-900">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr className="border-t border-slate-800">
-                <td className="p-3 text-slate-400 text-center" colSpan={5}>
-                  Loading transactions...
+              <tr>
+                <td className="p-8 text-center text-slate-500" colSpan={6}>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="loading-spinner"></div>
+                    Loading transactions...
+                  </div>
                 </td>
               </tr>
             ) : sortedTransactions.length === 0 ? (
-              <tr className="border-t border-slate-800">
-                <td className="p-3 text-slate-400" colSpan={5}>
-                  S'ka transaksione ende.
+              <tr>
+                <td className="p-12 text-center text-slate-500" colSpan={6}>
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <p className="text-slate-600 mb-4">No transactions found</p>
+                  <button onClick={() => openModal()} className="btn-primary">
+                    Add Your First Transaction
+                  </button>
                 </td>
               </tr>
             ) : (
               sortedTransactions.map((t) => (
-                <tr key={t.id} className="border-t border-slate-800">
-                  <td className="p-3">{t.date}</td>
-                  <td className="p-3">
-                    <span className="px-2 py-1 rounded text-xs bg-slate-800">{t.type}</span>
+                <tr key={t.id} className="table-row">
+                  <td className="p-4 text-slate-900">{new Date(t.date).toLocaleDateString()}</td>
+                  <td className="p-4">
+                    <span className={`badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}`}>
+                      {t.type}
+                    </span>
                   </td>
-                  <td className="p-3">{t.category_name || getCategoryName(t.category_id)}</td>
-                  <td className="p-3">€ {Number(t.amount || 0).toFixed(2)}</td>
-                  <td className="p-3">
+                  <td className="p-4 text-slate-700">{t.category_name || getCategoryName(t.category_id)}</td>
+                  <td className="p-4 text-slate-700">{t.description || '-'}</td>
+                  <td className="p-4">
+                    <span className={`font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                      {t.type === 'income' ? '+' : '-'}€{Number(t.amount || 0).toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="p-4">
                     <div className="flex gap-2">
                       <button
                         onClick={() => openModal(t)}
-                        className="text-xs text-slate-300 hover:text-slate-100"
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                        title="Edit"
                       >
-                        Edit
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                       </button>
                       <button
                         onClick={() => handleDelete(t.id)}
-                        className="text-xs text-red-400 hover:text-red-300"
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        title="Delete"
                       >
-                        Delete
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </button>
                     </div>
                   </td>
@@ -357,20 +408,27 @@ export default function Transactions() {
               </div>
             </div>
 
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={handleSave}
-                disabled={saving || !form.date || !form.category_id || !form.amount || filteredCategories.length === 0}
-                className="flex-1 rounded-xl border border-slate-700 bg-slate-100 text-slate-950 px-3 py-2 text-sm font-semibold hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
+            <div className="flex gap-3 mt-6">
               <button
                 onClick={closeModal}
                 disabled={saving}
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm hover:bg-slate-900/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-secondary flex-1"
               >
                 Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || !form.date || !form.category_id || !form.amount || filteredCategories.length === 0}
+                className="btn-primary flex-1"
+              >
+                {saving ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="loading-spinner"></div>
+                    Saving...
+                  </div>
+                ) : (
+                  editingId ? "Update Transaction" : "Add Transaction"
+                )}
               </button>
             </div>
           </div>

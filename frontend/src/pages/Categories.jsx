@@ -83,114 +83,191 @@ export default function Categories() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Categories</h2>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Categories</h1>
+          <p className="text-slate-600 mt-1">Organize your transactions with custom categories</p>
+        </div>
         <button
           onClick={() => openModal()}
-          className="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm hover:bg-slate-900/70"
+          className="btn-primary flex items-center gap-2"
         >
-          + Add
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Add Category
         </button>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/30 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-900/60">
-            <tr className="text-left">
-              <th className="p-3">Name</th>
-              <th className="p-3">Type</th>
-              <th className="p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr className="border-t border-slate-800">
-                <td className="p-3 text-slate-400 text-center" colSpan={3}>
-                  Loading categories...
-                </td>
-              </tr>
-            ) : categories.length === 0 ? (
-              <tr className="border-t border-slate-800">
-                <td className="p-3 text-slate-400" colSpan={3}>
-                  S'ka kategori ende.
-                </td>
-              </tr>
-            ) : (
-              categories.map((category) => (
-                <tr key={category.id} className="border-t border-slate-800">
-                  <td className="p-3">{category.name}</td>
-                  <td className="p-3">
-                    <span className="px-2 py-1 rounded text-xs bg-slate-800">
-                      expense
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openModal(category)}
-                        className="text-xs text-slate-300 hover:text-slate-100"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category.id)}
-                        className="text-xs text-red-400 hover:text-red-300"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/95 backdrop-blur p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingId ? "Edit Category" : "Add Category"}
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-slate-400">Name</label>
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
-                  placeholder="Category name"
-                  autoFocus
-                />
+      {/* Categories Grid */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="loading-spinner"></div>
+          <span className="ml-3 text-slate-600">Loading categories...</span>
+        </div>
+      ) : categories.length === 0 ? (
+        <div className="card p-12 text-center">
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">No categories yet</h3>
+          <p className="text-slate-600 mb-6">Create your first category to start organizing your transactions.</p>
+          <button onClick={() => openModal()} className="btn-primary">
+            Create Your First Category
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <div key={category.id} className="card p-6 group hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button
+                    onClick={() => openModal(category)}
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category.id)}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               <div>
-                <label className="text-xs text-slate-400">Type</label>
-                <select
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
-                >
-                  <option value="income">Income</option>
-                  <option value="expense">Expense</option>
-                </select>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">{category.name}</h3>
+                <div className="flex items-center gap-2">
+                  <span className="badge bg-slate-100 text-slate-700">
+                    Expense Category
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={handleSave}
-                disabled={saving || !form.name.trim()}
-                className="flex-1 rounded-xl border border-slate-700 bg-slate-100 text-slate-950 px-3 py-2 text-sm font-semibold hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
+          ))}
+        </div>
+      )}
+
+      {modalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-slate-900">
+                {editingId ? "Edit Category" : "Create New Category"}
+              </h2>
               <button
                 onClick={closeModal}
                 disabled={saving}
-                className="flex-1 rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm hover:bg-slate-900/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-200 disabled:opacity-50"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Category Name
+                </label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="input-modern w-full"
+                  placeholder="Enter category name"
+                  autoFocus
+                  disabled={saving}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Category Type
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="relative">
+                    <input
+                      type="radio"
+                      name="type"
+                      value="expense"
+                      checked={form.type === "expense"}
+                      onChange={(e) => setForm({ ...form, type: e.target.value })}
+                      className="sr-only peer"
+                      disabled={saving}
+                    />
+                    <div className="p-4 border-2 border-slate-200 rounded-xl cursor-pointer peer-checked:border-red-300 peer-checked:bg-red-50 hover:border-slate-300 transition-all duration-200">
+                      <div className="text-center">
+                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        </div>
+                        <div className="text-sm font-medium text-slate-900">Expense</div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className="relative">
+                    <input
+                      type="radio"
+                      name="type"
+                      value="income"
+                      checked={form.type === "income"}
+                      onChange={(e) => setForm({ ...form, type: e.target.value })}
+                      className="sr-only peer"
+                      disabled={saving}
+                    />
+                    <div className="p-4 border-2 border-slate-200 rounded-xl cursor-pointer peer-checked:border-green-300 peer-checked:bg-green-50 hover:border-slate-300 transition-all duration-200">
+                      <div className="text-center">
+                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                          </svg>
+                        </div>
+                        <div className="text-sm font-medium text-slate-900">Income</div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-8">
+              <button
+                onClick={closeModal}
+                disabled={saving}
+                className="btn-secondary flex-1"
               >
                 Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || !form.name.trim()}
+                className="btn-primary flex-1"
+              >
+                {saving ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="loading-spinner"></div>
+                    Saving...
+                  </div>
+                ) : (
+                  editingId ? "Update Category" : "Create Category"
+                )}
               </button>
             </div>
           </div>

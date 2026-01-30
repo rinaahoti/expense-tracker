@@ -17,7 +17,7 @@ export default function Register() {
 
     try {
       await authAPI.register({ username, email, password });
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
@@ -28,50 +28,69 @@ export default function Register() {
   return (
     <form onSubmit={onSubmit} className="space-y-3">
       {error && (
-        <div className="text-red-400 text-sm text-center p-2 bg-red-900/20 rounded-lg border border-red-800">
-          {error}
+        <div className="text-red-600 text-sm text-center p-3 bg-red-50 border border-red-200 rounded-xl mb-4">
+          <div className="flex items-center gap-2 justify-center">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {error}
+          </div>
         </div>
       )}
 
-      <div>
-        <label className="text-xs text-slate-400">Username</label>
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700">Username</label>
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+          className="input-modern w-full"
+          type="text"
+          placeholder="Choose a username"
           required
           disabled={loading}
         />
       </div>
-      <div>
-        <label className="text-xs text-slate-400">Email</label>
+
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700">Email Address</label>
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+          className="input-modern w-full"
           type="email"
+          placeholder="Enter your email"
           required
           disabled={loading}
         />
       </div>
-      <div>
-        <label className="text-xs text-slate-400">Password</label>
+
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700">Password</label>
         <input
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm outline-none focus:border-slate-600"
+          className="input-modern w-full"
           type="password"
+          placeholder="Create a password (min 6 characters)"
           required
           minLength="6"
           disabled={loading}
         />
       </div>
+
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl border border-slate-700 bg-slate-100 text-slate-950 px-3 py-2 text-sm font-semibold hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn-primary w-full mt-6"
       >
-        {loading ? "Creating account..." : "Register"}
+        {loading ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="loading-spinner"></div>
+            Creating account...
+          </div>
+        ) : (
+          "Create Account"
+        )}
       </button>
     </form>
   );
